@@ -12,7 +12,10 @@ with open('billboard-songs.txt') as f:
 	billboardSongs = f.readlines()
 
 numRetrieved = 0
+i = 0
 for line in billboardSongs:
+	print(i)
+	i = i+1
 	lineList = line.split(":")
 	title = lineList[0]
 	artist = lineList[1]
@@ -38,6 +41,7 @@ for line in billboardSongs:
 	if lyrics != None:
 		lyricText = lyrics.text.strip()
 		if lyricText.startswith('We do not have the lyrics'):
+			print("Lyrics not on website")
 			continue
 		file_name = 'billboard-lyrics/'+ artist + ':' + title + '.txt'
 		f = open(file_name, 'w')
