@@ -4,80 +4,100 @@ from util import *
 import os
 
 
+
 def predictor(x, weights):
 	score = 0
 	features = featureExtractor(x)
-	score = util.dotProduct(features, weights)
+	score = dotProduct(features, weights)
+	print score
 	if score <= 0:
 		return 1
 	else:
 		return -1
 
 def featureExtractor(x):
-	d = collections.defauldict(int)
-	for word in words:
+	d = collections.defaultdict(int)
+	for word in x.split():
 		d[word] = d[word] + 1
 	return d
 
 def learnPredictor(trainExamples, numIters, eta):
-	weights = collections.defauldict(int)
+	weights = collections.defaultdict(int)
 	for i in xrange(numIters):
 		for i in xrange(len(trainExamples)):
 			x = trainExamples[i][0]
 			y = trainExamples[i][1]
 			features = featureExtractor(x)
-			margin = y*util.dotProduct(weights, features)
+			margin = y*dotProduct(weights, features)
 			if margin < 1:
 				for k2, v2 in features.iteritems():
-					lossHinge = -(v2*y) 
+					lossHinge = -(v2*y)
 					weights[k2] = weights[k2] - (eta*lossHinge)
 
+	print weights
 	return weights
 
 def labelTrainingExamples():
-	inBillboardDirectory = 'lyrics/billboard-lyrics/training-examples'
-	trainingexamples = []
+	inBillboardDirectory = '../lyrics/billboard-lyrics/training-set'
+	trainingExamples = []
 	for filename in os.listdir(inBillboardDirectory):
 		song = ''
-		with open(inBillboardDirectory + '/' + filename, 'r') as f:
-			song = f.readlines()
-		songEntry = (song, 1)
-		trainingExamples.append(songEntry)
+		if filename != '.DS_Store':
+			with open(inBillboardDirectory + '/' + filename, 'r') as f:
+				song = f.readlines()
+				songString = ' '.join(song)
+				print songString
+				songString = songString.replace('\n', '')
+				songString = songString.replace('\r', '')
+				songEntry = (songString, 1)
+				trainingExamples.append(songEntry)
 
-	outOfBillboardDirectory = 'lyrics/non-billboard-lyrics/training-examples'
+	outOfBillboardDirectory = '../lyrics/non-billboard-lyrics/training-set'
 	for filename in os.listdir(outOfBillboardDirectory):
 		song = ''
 		with open(outOfBillboardDirectory + '/' + filename, 'r') as f:
-			song = f.readlines()
-		songEntry = (song, -1)
-		trainingExamples.append(songEntry)
+				song = f.readlines()
+				songString = ' '.join(song)
+				songString = songString.replace('\n', '')
+				songString = songString.replace('\r', '')
+				songEntry = (songString, 1)
+				trainingExamples.append(songEntry)
 	return trainingExamples
 
 def labelTestExamples():
-	inBillboardDirectory = 'lyrics/billboard-lyrics/test-examples'
+	inBillboardDirectory = '../lyrics/billboard-lyrics/test-set'
 	testExamples = []
 	for filename in os.listdir(inBillboardDirectory):
 		song = ''
 		with open(inBillboardDirectory + '/' + filename, 'r') as f:
-			song = f.readlines()
-		songEntry = (song, 1)
-		testExamples.append(songEntry)
+				song = f.readlines()
+				songString = ' '.join(song)
+				songString = songString.replace('\n', '')
+				songString = songString.replace('\r', '')
+				songEntry = (songString, 1)
+				testExamples.append(songEntry)
 
-	outOfBillboardDirectory = 'lyrics/non-billboard-lyrics/test-examples'
+	outOfBillboardDirectory = '../lyrics/non-billboard-lyrics/test-set'
 	for filename in os.listdir(outOfBillboardDirectory):
 		song = ''
 		with open(outOfBillboardDirectory + '/' + filename, 'r') as f:
-			song = f.readlines()
-		songEntry = (song, -1)
-		testExamples.append(songEntry)
+				song = f.readlines()
+				songString = ' '.join(song)
+				songString = songString.replace('\n', '')
+				songString = songString.replace('\r', '')
+				songEntry = (songString, 1)
+				testExamples.append(songEntry)
 	return testExamples
 
 def main():
 	trainingExamples = labelTrainingExamples()
-	numIters = 100
+	print len(trainingExamples)
+	numIters = 1
 	eta = .01
 	weights = learnPredictor(trainingExamples, numIters, eta)
+	print weights
 	testExamples = labelTestExamples()
+	print len(testExamples)
 	totalTested = len(testExamples)
 	correct = 0
 	for testExample in testExamples:
