@@ -3,17 +3,14 @@ import collections
 from util import *
 import os
 
-
-
 def predictor(x, weights):
 	score = 0
 	features = featureExtractor(x)
 	score = dotProduct(features, weights)
-	print score
 	if score <= 0:
-		return 1
-	else:
 		return -1
+	else:
+		return 1
 
 def featureExtractor(x):
 	d = collections.defaultdict(int)
@@ -34,7 +31,6 @@ def learnPredictor(trainExamples, numIters, eta):
 					lossHinge = -(v2*y)
 					weights[k2] = weights[k2] - (eta*lossHinge)
 
-	print weights
 	return weights
 
 def labelTrainingExamples():
@@ -46,7 +42,6 @@ def labelTrainingExamples():
 			with open(inBillboardDirectory + '/' + filename, 'r') as f:
 				song = f.readlines()
 				songString = ' '.join(song)
-				print songString
 				songString = songString.replace('\n', '')
 				songString = songString.replace('\r', '')
 				songEntry = (songString, 1)
@@ -60,7 +55,7 @@ def labelTrainingExamples():
 				songString = ' '.join(song)
 				songString = songString.replace('\n', '')
 				songString = songString.replace('\r', '')
-				songEntry = (songString, 1)
+				songEntry = (songString, -1)
 				trainingExamples.append(songEntry)
 	return trainingExamples
 
@@ -85,19 +80,18 @@ def labelTestExamples():
 				songString = ' '.join(song)
 				songString = songString.replace('\n', '')
 				songString = songString.replace('\r', '')
-				songEntry = (songString, 1)
+				songEntry = (songString, -1)
 				testExamples.append(songEntry)
 	return testExamples
 
 def main():
 	trainingExamples = labelTrainingExamples()
-	print len(trainingExamples)
 	numIters = 1
 	eta = .01
 	weights = learnPredictor(trainingExamples, numIters, eta)
-	print weights
+	for key, value in weights.iteritems():
+		print key
 	testExamples = labelTestExamples()
-	print len(testExamples)
 	totalTested = len(testExamples)
 	correct = 0
 	for testExample in testExamples:
