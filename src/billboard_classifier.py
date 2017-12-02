@@ -42,8 +42,9 @@ def featureExtractor(x):
 				d[word + ' ' + nextWord + ' ' + words[i+2]] += 1 #trigram
 		#i = i + 1
 		#print(i)
-	if (float(len(uniqueWords)) / float(len(words)) ) > .4: #unique word ratio
-		d['ratio_score'] = 1 
+	#if (float(len(uniqueWords)) / float(len(words)) ) > .4: #unique word ratio
+	#	d['ratio_score'] = 1 
+	d['ratio_score'] = float(len(uniqueWords)) / float(len(words))
 		#d[artist + 'ratio_score'] = 1"""
 		#print(float(len(uniqueWords)) / float(len(words)))
 
