@@ -48,7 +48,7 @@ brands = set(['nike', 'adidas', 'henny', 'hennessy', 'jordans', 'gucci', 'versac
 				d['lastRhyme'] += 1
 			lastWordLine = word
 	if i < 100:
-		d['short'] = 1
+		d['short'] = 1 #kinda wack for the actual thing made it worse
 	elif 100 <= i and i < 200:
 		d['medium'] = 1
 	elif 200 <= i and i < 300:
@@ -70,11 +70,18 @@ def featureExtractor(x):
 	lineSplit = x.split(':')
 	title = lineSplit[0]
 	artist = lineSplit[1]
-	d[artist] = 1
+	#d[artist] = 1
+	artists = artist.split()
+	for artist in artists:
+		d[artist] = 1
+		artistFeat = re.sub("[^a-zA-Z]+", '', artist)
+		if artistFeat.lower() == 'feat' or artistFeat.lower() == 'featuring':
+			d['feat__'] += 10
 	lastWordLine = ''
 	j = 0
 	for word in words:
 		#test
+		#look for keywords like hook or chorus
 		if (j == 0):
 			d['sentiment_score'] = float(word)
 
@@ -90,7 +97,7 @@ def featureExtractor(x):
 			d[word] += 10
 
 		if word[-1:] == '\n':
-			word = re.sub("[^a-zA-Z]+", '', word) #takes of the \n
+			word = re.sub("[^a-zA-Z]+", '', word) #takes off the \n
 			
 			if lastWordLine[-2:] == word[-2:]:
 				#print(word)
@@ -113,8 +120,6 @@ def featureExtractor(x):
 		#print(i)
 	#if (float(len(uniqueWords)) / float(len(words)) ) > .4: #unique word ratio
 	#	d['ratio_score'] = 1
-
-	d['ratio_score'] = float(len(uniqueWords)) / float(len(words))
 		#d[artist + 'ratio_score'] = 1
 		#print(float(len(uniqueWords)) / float(len(words)))
 
