@@ -90,9 +90,9 @@ def featureExtractor(x):
 			d[word] += 10
 
 		if word[-1:] == '\n':
-			word = re.sub("[^a-zA-Z]+", '', word)
+			word = re.sub("[^a-zA-Z]+", '', word) #takes of the \n
 			
-			if lastWordLine[-1:] == word[-1:]:
+			if lastWordLine[-2:] == word[-2:]:
 				#print(word)
 				#print(lastWordLine)
 				d['lastRhyme'] += 1
