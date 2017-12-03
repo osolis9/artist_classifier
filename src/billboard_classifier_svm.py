@@ -10,26 +10,129 @@ import sys
 #from senti_classifier import senti_classifier
 #from textblob import Textblob
 
-#profanity = set(['fuck', 'shit', 'damn', 'bitch', 'fucked', 'nigga', 'ass', 'bastard', 'motherfucker', 'shit'])
-#cities = set['los angeles', 'la', 'new york', 'atlanta', 'atl', 'houston']
+profanity = set(['fuck', 'shit', 'damn', 'bitch', 'fucked', 'nigga', 'ass', 'bastard', 'motherfucker', 'shit'])
+cities = set(['los', 'angeles', 'la', 'new york', 'atlanta', 'atl', 'houston', 'chicago'])
+brands = set(['nike', 'adidas', 'henny', 'hennessy', 'jordans', 'gucci', 'versace', 'prada', 'ralph', 'chanel', 'mercedes', 'patron', 'bentley'])
+
+"""def featureExtractor(x):
+	d = collections.defaultdict(float)
+	firstLine = x.split('\n', 1)[0]
+	lineSplit = x.split(':')
+	title = lineSplit[0]
+	artist = lineSplit[1]
+	d[artist] = 1
+	d = collections.defaultdict(int)
+	words = x.split(' ')
+	uniqueWords = set([])
+	i = 0
+	lastWordLine = ''
+	for word in words:
+		if (i == 0):
+			#print(i)
+			#sentiment score
+			d['sentiment'] = float(word)
+			i = i+1
+			continue #trying to get sentiment
+		#uniqueWords.add(word)
+		#word = word.lower()
+		#d[artist + ' ' + word] = 1
+		if word in profanity or word in cities or word in brands:
+			d[word] += 5
+		i += 1
+		if word[-1:] == '\n':
+			word = re.sub("[^a-zA-Z]+", '', word)
+			
+			if lastWordLine[-1:] == word[-1:]:
+				#print(word)
+				#print(lastWordLine)
+				d['lastRhyme'] += 1
+			lastWordLine = word
+	if i < 100:
+		d['short'] = 1
+	elif 100 <= i and i < 200:
+		d['medium'] = 1
+	elif 200 <= i and i < 300:
+		d['smedium'] = 1
+	elif 300 <= i and i < 400:
+		d['large'] = 1
+	else:
+		d['xtra'] = 1
+	d['ratio_score'] = float(len(uniqueWords)) / float(len(words))
+	return d"""
+
+
 def featureExtractor(x):
+	d = collections.defaultdict(int)
+	i = 0 
+	words = x.split(' ')
+	uniqueWords = set([])
+	firstLine = x.split('\n', 1)[0]
+	lineSplit = x.split(':')
+	title = lineSplit[0]
+	artist = lineSplit[1]
+	d[artist] = 1
+	lastWordLine = ''
+	for word in words:
+		#test
+		#if (i == 0):
+			#print(i)
+			#sentiment score
+		#	d[word] = 1
+		#	d[artist + ' ' + word] = 1
+		#	i = i+1
+		#	continue #trying to get sentiment	
+		#word = re.sub("[^a-zA-Z]+", '', word).lower() #tried standardizing all words, but it made it worse
+		uniqueWords.add(word)
+		if word in profanity or word in cities or word in brands:
+			d[word] += 10
+
+		if word[-1:] == '\n':
+			word = re.sub("[^a-zA-Z]+", '', word)
+			
+			if lastWordLine[-1:] == word[-1:]:
+				#print(word)
+				#print(lastWordLine)
+				d['lastRhyme'] += 1
+			lastWordLine = word
+		d[word] += 1 #unigram
+		#d[artist + ' ' + word] += 1
+		if i < len(words) - 1:
+			nextWord = words[i + 1]
 
 
+			#nextWord = re.sub("[^a-zA-Z]+", '', nextWord).lower() 
+			d[word + ' ' + nextWord] += 1 #bigram
+			#d[artist + ' ' + word + ' ' + nextWord] += 1
+			if i < len(words) - 2:
+				d[word + ' ' + nextWord + ' ' + words[i+2]] += 1 #trigram
+		#i = i + 1
+		#print(i)
+	if (float(len(uniqueWords)) / float(len(words)) ) > .4: #unique word ratio
+		d['ratio_score'] = 1 
+	#d['ratio_score'] = float(len(uniqueWords)) / float(len(words))
+		#d[artist + 'ratio_score'] = 1
+		#print(float(len(uniqueWords)) / float(len(words)))
 
-def featureExtractor(x):
+		#if word in profanity:
+		#	d[word] = 1
+		#d[word] = d[word] + 1
+
+	return d
+
+"""def featureExtractor(x):
 	d = collections.defaultdict(int)
 	i = 0 
 	words = x.split()
 	uniqueWords = set([])
 	for word in words:
 		#test
-		"""if (i == 0):
+		#if (i == 0):
 			#print(i)
 			#sentiment score
-			d[word] = 1
-			d[artist + ' ' + word] = 1
-			i = i+1
-			continue #trying to get sentiment"""	
+		#	d[word] = 1
+		#	d[artist + ' ' + word] = 1
+		#	i = i+1
+		#	continue #trying to get sentiment	
 		#word = re.sub("[^a-zA-Z]+", '', word).lower() #tried standardizing all words, but it made it worse
 		uniqueWords.add(word)
 		d[word] += 1 #unigram
@@ -48,14 +151,14 @@ def featureExtractor(x):
 	if (float(len(uniqueWords)) / float(len(words)) ) > .4: #unique word ratio
 		d['ratio_score'] = 1 
 	#d['ratio_score'] = float(len(uniqueWords)) / float(len(words))
-		#d[artist + 'ratio_score'] = 1"""
+		#d[artist + 'ratio_score'] = 1
 		#print(float(len(uniqueWords)) / float(len(words)))
 
 		#if word in profanity:
 		#	d[word] = 1
 		#d[word] = d[word] + 1
 
-	return d
+	return d"""
 
 def predictor(x, weights):
 	score = 0
@@ -90,11 +193,12 @@ def addPosOrNeg(songString):
 	songBlob = textblob.TextBlob(songString)
 	sentiment = songBlob.sentiment.polarity
 	#print(sentiment)
-	if sentiment > 0.0:
+	#if sentiment > 0.0:
 	#if posScore > negScore:
-		songString = 'positive_score ' + songString
-	else:
-		songString = 'negative_score ' + songString
+	#	songString = 'positive_score ' + songString
+	#else:
+	#	songString = 'negative_score ' + songString
+	songString = str(sentiment) + ' ' + songString
 	return songString
 
 def removeUnallowedMetadata(song):
