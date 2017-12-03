@@ -9,203 +9,114 @@ import getopt
 import math
 import argparse
 
-featurePrefixes = ['feat', 'ft.']
-
+#Can add to profanity list
 profanity = set(['fuck', 'shit', 'damn', 'bitch', 'fucked', 'nigga', 'ass', 'bastard', 'motherfucker', 'shit'])
+
 cities = set(['los', 'angeles', 'la', 'new york', 'atlanta', 'atl', 'houston', 'chicago'])
 brands = set(['nike', 'adidas', 'henny', 'hennessy', 'jordans', 'gucci', 'versace', 'prada', 'ralph', 'chanel', 'mercedes', 'patron', 'bentley'])
 
-
-"""def featureExtractor(x):
-
-
-
-	d = collections.defaultdict(int)
-	i = 0
-
-	# split out first line
-	# get information from first line
-	# features on title and author
+# Returns (title, artist, sentiment, words) tuple
+def parseLyrics(x):
 	lines = x.split('\n', 1)
 	firstLine = lines[0]
 	rest = lines[1]
 
-	# firstLineSplit = firstLine.split(':')
-	# title = firstLineSplit[0]
-	# title = title.replace('-', ' ')
-	# artist = firstLineSplit[1]
-
-	# print (title)
-	# print (artist)
-
-	# #FEATURED ARTISTS
-	# #startsWith instead of in
-	# #'with' for artists
-	# for word in title:
-	# 	for featurePrefix in featurePrefixes:
-	# 		if featurePrefix in word.lower():
-	# 			d['featured_artist'] = 1
-	# 			print ('got here')
-	# 		if 'remix' in word.lower():
-	# 			d['remix'] = 1
-	# 			print ('got here')
-	# for word in artist:
-	# 	for featurePrefix in featurePrefixes:
-	# 		if featurePrefix in word.lower():
-	# 			d['featured_artist'] = 1
-	# 			print ('got here')
-
-	# print (title)
-	# print (artist)
-	# print ('')
-	# print ('')
-
-	#Buckets
-	#d['titleLength'] = len(title)
-
-	# Featuring
-	# Remix
-
-	words = rest.split()
+	#To make weird features work,
+	#need words = x.split() here
 	#words = x.split()
+	words = rest.split()
 
+	firstLineSplit = firstLine.split(':')
+	artist = firstLineSplit[1]
+	firstHalfSplit = firstLineSplit[0].split(' ', 1)
+	sentiment = float(firstHalfSplit[0])
+	title = firstHalfSplit[1].replace('-', ' ')
+	return (title, artist, sentiment, words)
 
-	uniqueWords = set([])
-	for word in words:
-		uniqueWords.add(word)
-		d[word] += 1 #unigram
-		#d[artist + ' ' + word] += 1
-		if i < len(words) - 1:
-			nextWord = words[i + 1]
-
-
-			#nextWord = re.sub("[^a-zA-Z]+", '', nextWord).lower()
-
-			#uncomment
-			d[word + ' ' + nextWord] += 1 #bigram
-
-			#d[artist + ' ' + word + ' ' + nextWord] += 1
-			if i < len(words) - 2:
-				d[word + ' ' + nextWord + ' ' + words[i+2]] += 1 #trigram
-		#i = i + 1
-		#print(i)
-	#if (float(len(uniqueWords)) / float(len(words)) ) > .4: #unique word ratio
-	#	d['ratio_score'] = 1
-	d['ratio_score'] = float(len(uniqueWords)) / float(len(words))
-		#d[artist + 'ratio_score'] = 1
-		#print(float(len(uniqueWords)) / float(len(words)))
-
-
-	for swearPrefix in profanity:
-		if swearPrefix in word:
-			d['profanity'] += 1
-
-	#i = i + 1
-
-
-	d['ratio_score'] = float(len(uniqueWords)) / float(len(words))
-	# numWords = len(words)
-	# if numWords < 200:
-	# 	d['words_200'] = 1
-	# elif numWords > 200 and numWords <= 400:
-	# 	d['words_200-400'] = 1
-	# elif numWords > 400 and numWords <= 600:
-	# 	d['words_400-600'] = 1
-	# elif numWords > 600 and numWords <= 800:
-	# 	d['words_600-800'] = 1
-	# elif numWords > 800 and numWords <= 1000:
-	# 	d['words_800-1000'] = 1
-	# elif numWords > 1000 and numWords <= 1200:
-	# 	d['words_1000-1200'] = 1
-	# elif numWords > 1200 and numWords <= 1400:
-	# 	d['words_1200-1400'] = 1
-	# else:
-	# 	d['words_1400'] = 1
-
-
-
-
-
-		#test
-		# if i == 0:
-		# 	sentimentScore = float(word)
-		# 	print(sentimentScore)
-		# 	if sentimentScore > .5:
-		# 		d['sentiment_score'] = 1
-		# 	continue #trying to get sentiment
-		#word = re.sub("[^a-zA-Z]+", '', word).lower() #tried standardizing all words, but it made it worse
-		#nextWord = re.sub("[^a-zA-Z]+", '', nextWord).lower()
-		#if word in profanity:
-		#	d[word] = 1
-		#d[word] = d[word] + 1
-
-	return d"""
 
 def featureExtractor(x):
 	d = collections.defaultdict(float)
 	i = 0
-	words = x.split(' ')
+
+	title, artist, sentiment, words = parseLyrics(x)
 	uniqueWords = set([])
-	firstLine = x.split('\n', 1)[0]
-	lineSplit = x.split(':')
-	title = lineSplit[0]
-	artist = lineSplit[1]
-	#d[artist] = 1
+
+	#Sentiment
+	#Positive/Negative?
+	d['sentiment_score'] = sentiment
+
+	titleLength = len(title.split())
+	if titleLength > 6:
+		d['long_title'] = 1
+
 	artists = artist.split()
 	for artist in artists:
-		d[artist] = 1
+		#This seems like it would be cheating
+		#d[artist] = 1
 		artistFeat = re.sub("[^a-zA-Z]+", '', artist)
-		if artistFeat.lower() == 'feat' or artistFeat.lower() == 'featuring':
-			d['feat__'] += 10
+		artistFeat = artistFeat.lower()
+
+		#Featured artists
+		if artistFeat.startswith('feat') or artistFeat.startswith('ft.'):
+			d['featured_artists'] += 10
+			#d['featured_artists'] = 1
+
+	#Remix, Acoustic, Interlude
+	for word in title.split():
+		if word == 'remix' or word == 'acoustic' or word == 'interlude':
+			d['remix'] = 1
+
+
 	lastWordLine = ''
 	j = 0
+	#look for keywords like hook or chorus
 	for word in words:
-		#test
-		#look for keywords like hook or chorus
-		if (j == 0):
-			d['sentiment_score'] = float(word)
-
-			#print(i)
-			#sentiment score
-		#	d[word] = 1
-		#	d[artist + ' ' + word] = 1
-			j = j+1
-			continue #trying to get sentiment
-		#word = re.sub("[^a-zA-Z]+", '', word).lower() #tried standardizing all words, but it made it worse
 		uniqueWords.add(word)
 		if word in profanity or word in cities or word in brands:
 			d[word] += 10
 
 		if word[-1:] == '\n':
 			word = re.sub("[^a-zA-Z]+", '', word) #takes off the \n
-
 			if lastWordLine[-2:] == word[-2:]:
-				#print(word)
-				#print(lastWordLine)
 				d['lastRhyme'] += 1
 			lastWordLine = word
-		d[word] += 1 #unigram
-		#d[artist + ' ' + word] += 1
-		if i < len(words) - 1:
-			nextWord = words[i + 2]
 
 
-			#nextWord = re.sub("[^a-zA-Z]+", '', nextWord).lower()
-			d[word + ' ' + nextWord] += 1 #bigram
-			#d[artist + ' ' + word + ' ' + nextWord] += 1
-			if i < len(words) - 2:
-				d[word + ' ' + nextWord + ' ' + words[i+3]] += 1 #trigram
-		j += 1
-		#i = i + 1
-		#print(i)
-	#if (float(len(uniqueWords)) / float(len(words)) ) > .4: #unique word ratio
-	#	d['ratio_score'] = 1
-		#d[artist + 'ratio_score'] = 1
-		#print(float(len(uniqueWords)) / float(len(words)))
+		#Weird feature stuff. Can be uncommented for large boost, still need to figure out how this works
 
-		#if word in profanity:
-		#	d[word] = 1
-		#d[word] = d[word] + 1
+		# d[word] += 1 #unigram
+		# d[artist + ' ' + word] += 1
+		# if i < len(words) - 1:
+		# 	nextWord = words[i + 2]
+		# 	nextWord = re.sub("[^a-zA-Z]+", '', nextWord).lower()
+		# 	d[word + ' ' + nextWord] += 1 #bigram
+		# 	d[artist + ' ' + word + ' ' + nextWord] += 1
+		# 	if i < len(words) - 2:
+		# 		d[word + ' ' + nextWord + ' ' + words[i+3]] += 1 #trigram
+		# j += 1
+
+
+	# Ratio for repetition
+	d['ratio_score'] = float(len(uniqueWords)) / float(len(words))
+
+	# Number of words buckets
+	numWords = len(words)
+	if numWords < 200:
+		d['words_200'] = 1
+	elif numWords > 200 and numWords <= 400:
+		d['words_200-400'] = 1
+	elif numWords > 400 and numWords <= 600:
+		d['words_400-600'] = 1
+	elif numWords > 600 and numWords <= 800:
+		d['words_600-800'] = 1
+	elif numWords > 800 and numWords <= 1000:
+		d['words_800-1000'] = 1
+	elif numWords > 1000 and numWords <= 1200:
+		d['words_1000-1200'] = 1
+	elif numWords > 1200 and numWords <= 1400:
+		d['words_1200-1400'] = 1
+	else:
+		d['words_1400'] = 1
 
 	return d
 
@@ -234,7 +145,7 @@ def learnPredictorRegular(trainExamples, numIters, eta):
 					lossHinge = -(v2*y)
 					weights[k2] = weights[k2] - (eta*lossHinge)
 
-	#print weights
+	print (weights)
 	return weights
 
 def learnPredictorSVM(trainExamples, numIters, eta):
@@ -253,10 +164,8 @@ def learnPredictorSVM(trainExamples, numIters, eta):
 					lossHinge = -(v2*y)
 					weights[k2] = weights[k2] - (eta*(lossHinge+(lam * weights[k2]))) #im doing this on grad of loss not training loss and notes say training
 
-	#print weights
+	print (weights)
 	return weights
-
-
 
 
 # Arguments
