@@ -1,4 +1,4 @@
-import os, random, operator, sys
+import os, random, operator, sys, re, textblob
 
 def dotProduct(d1, d2):
     """
@@ -21,61 +21,132 @@ def increment(d1, scale, d2):
     for f, v in d2.items():
         d1[f] = d1.get(f, 0) + v * scale
 
-# def readExamples(path):
-#     '''
-#     Reads a set of training examples.
-#     '''
-#     examples = []
-#     for line in open(path):
-#         # Format of each line: <output label (+1 or -1)> <input sentence>
-#         y, x = line.split(' ', 1)
-#         examples.append((x.strip(), int(y)))
-#     print ('Read %d examples from %s' % (len(examples), path))
-#     return examples
 
-# def evaluatePredictor(examples, predictor):
-#     '''
-#     predictor: a function that takes an x and returns a predicted y.
-#     Given a list of examples (x, y), makes predictions based on |predict| and returns the fraction
-#     of misclassiied examples.
-#     '''
-#     error = 0
-#     for x, y in examples:
-#         if predictor(x) != y:
-#             error += 1
-#     return 1.0 * error / len(examples)
+def addPosOrNeg(songString):
+	#posScore, negScore = senti_classifier.polarity_scores([songString])
+	songBlob = textblob.TextBlob(songString)
+	sentiment = songBlob.sentiment.polarity
+	#print(sentiment)
+	#if sentiment > 0.0:
+	#if posScore > negScore:
+	#	songString = 'positive_score ' + songString
+	#else:
+	#	songString = 'negative_score ' + songString
+	songString = str(sentiment) + ' ' + songString
+	return songString
 
-# def outputWeights(weights, path):
-#     print ("%d weights" % len(weights))
-#     out = open(path, 'w')
-#     for f, v in sorted(weights.items(), key=lambda (f, v) : -v):
-#         print (>>out, '\t'.join([f, str(v)]))
-#     out.close()
+def removeUnallowedMetadata(song):
+	firstLine = song.split('\n', 1)[0]
+	indicesOfColon = [s.start() for s in re.finditer(':', firstLine)]
+	if len(indicesOfColon) > 1:
+		firstLine = firstLine[:indicesOfColon[1]]
+	song = firstLine + ' ' + song[song.find('\n'):]
+	return song
 
-# def verbosePredict(phi, y, weights, out):
-#     yy = 1 if dotProduct(phi, weights) >= 0 else -1
-#     if y:
-#         print (>>out, 'Truth: %s, Prediction: %s [%s]' % (y, yy, 'CORRECT' if y == yy else 'WRONG'))
-#     else:
-#         print (>>out, 'Prediction:', yy)
-#     for f, v in sorted(phi.items(), key=lambda (f, v) : -v * weights.get(f, 0)):
-#         w = weights.get(f, 0)
-#         print (>>out, "%-30s%s * %s = %s" % (f, v, w, v * w))
-#     return yy
+def labelTrainingExamples():
+	inBillboardDirectory = '../lyrics/billboard-lyrics/training-set'
+	trainingExamples = []
+	for filename in os.listdir(inBillboardDirectory):
+		song = ''
+		if filename != '.DS_Store':
+			with open(inBillboardDirectory + '/' + filename, 'r') as f:
+				song = f.readlines()
+				songString = ' '.join(song)
+				songString = removeUnallowedMetadata(songString)
+				#print("ERROR in billboard " + filename)
 
-# def outputErrorAnalysis(examples, featureExtractor, weights, path):
-#     out = open('error-analysis', 'w')
-#     for x, y in examples:
-#         print (>>out, '===', x)
-#         verbosePredict(featureExtractor(x), y, weights, out)
-#     out.close()
+				songString = addPosOrNeg(songString)
+				#songString = songString.replace('\n', '')
+				#songString = songString.replace('\r', '')
 
-# def interactivePrompt(featureExtractor, weights):
-#     while True:
-#         print ('> ',)
-#         x = sys.stdin.readline()
-#         if not x: break
-#         phi = featureExtractor(x)
-#         verbosePredict(phi, None, weights, sys.stdout)
+				songEntry = (songString, 1)
+				trainingExamples.append(songEntry)
 
-############################################################
+	outOfBillboardDirectory = '../lyrics/non-billboard-lyrics/training-set'
+	for filename in os.listdir(outOfBillboardDirectory):
+		song = ''
+		if filename != '.DS_Store':
+			with open(outOfBillboardDirectory + '/' + filename, 'r') as f:
+				song = f.readlines()
+				songString = ' '.join(song)
+				#print("ERROR not in billboard " + filename)
+
+				songString = addPosOrNeg(songString)
+				#songString = songString.replace('\n', '')
+				#songString = songString.replace('\r', '')
+				songEntry = (songString, -1)
+				trainingExamples.append(songEntry)
+	return trainingExamples
+
+
+def labelTestExamples():
+	inBillboardDirectory = '../lyrics/billboard-lyrics/validation-set'
+	testExamples = []
+	for filename in os.listdir(inBillboardDirectory):
+		song = ''
+		if filename != '.DS_Store':
+			with open(inBillboardDirectory + '/' + filename, 'r') as f:
+				song = f.readlines()
+				songString = ' '.join(song)
+				songString = removeUnallowedMetadata(songString)
+				songString = addPosOrNeg(songString)
+				#songString = songString.replace('\n', '')
+				#songString = songString.replace('\r', '')
+				songEntry = (songString, 1)
+				testExamples.append(songEntry)
+
+	outOfBillboardDirectory = '../lyrics/non-billboard-lyrics/validation-set'
+	for filename in os.listdir(outOfBillboardDirectory):
+		song = ''
+		if filename != '.DS_Store':
+			with open(outOfBillboardDirectory + '/' + filename, 'r') as f:
+				song = f.readlines()
+				songString = ' '.join(song)
+
+				songString = addPosOrNeg(songString)
+				#songString = songString.replace('\n', '')
+				#songString = songString.replace('\r', '')
+				songEntry = (songString, -1)
+				testExamples.append(songEntry)
+	return testExamples
+
+
+
+def evaluatePredictor(testExamples, weights, predictor):
+    testExamples = labelTestExamples()
+    totalTested = len(testExamples)
+    correct = 0
+    tp = 0
+    fp = 0
+    fn = 0
+    tn = 0
+
+    count = 0
+    for testExample in testExamples:
+
+        prediction = predictor(testExample[0], weights)
+        actual = testExample[1]
+        if actual == 1 and prediction == 1:
+            tp += 1
+        if prediction == 1 and actual == -1:
+            fp += 1
+        if prediction == -1 and actual == 1:
+            fn += 1
+        if (actual == prediction):
+            correct += 1
+
+
+        # print ('Test example ' + str(count))
+        # print ('CORRECT') if (actual == prediction) else print ('INCORRECT')
+        # print ('Prediction: ' + str(prediction) + ', Actual: ' + str(actual))
+        # print ('')
+
+
+        count += 1
+
+    print (correct)
+    print (totalTested)
+    percentageCorrect = float(correct) / float(totalTested)
+    print ("Accuracy: " + str(percentageCorrect))
+    print ("Precision: " + str(float(tp)/ (float(tp) + float(fp))))
+    print ("Recall: " + str(float(tp)/ (float(tp) + float(fn))))
