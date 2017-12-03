@@ -1,15 +1,17 @@
 import os, random
-
-numOfTestFiles = 160
-numOfValidationFiles = 144
+#1509 non
+#1324 billboard
+numOfValidationOrTestFilesNon = 151
+numOfValidationOrTestFilesBillboard = 133
 billboardDirectory = 'lyrics/billboard-lyrics'
 nonBillboardDirectory = 'lyrics/non-billboard-lyrics'
-for i in xrange(numOfTestFiles):
+#Billboard
+for i in xrange(numOfValidationOrTestFilesBillboard):
 	choosenFile = random.choice(os.listdir(billboardDirectory))
 	#move file to test folder
 	if choosenFile.endswith(".txt"):
 		os.rename(billboardDirectory + '/' + choosenFile, billboardDirectory + '/test-set/' + choosenFile)
-for j in xrange(numOfValidationFiles):
+for j in xrange(numOfValidationOrTestFilesBillboard):
 	choosenFile = random.choice(os.listdir(billboardDirectory))
 	if choosenFile.endswith(".txt"):
 		os.rename(billboardDirectory + '/' + choosenFile, billboardDirectory + '/validation-set/' + choosenFile)
@@ -17,12 +19,13 @@ for filename in os.listdir(billboardDirectory):
 	if filename.endswith(".txt"):
 		os.rename(billboardDirectory + '/' + filename, billboardDirectory + '/training-set/' + filename)
 
-for i in xrange(numOfTestFiles):
+#nonbillboard
+for i in xrange(numOfValidationOrTestFilesNon):
 	choosenFile = random.choice(os.listdir(nonBillboardDirectory))
 	#move file to test folder
 	if choosenFile.endswith(".txt"):
 		os.rename(nonBillboardDirectory + '/' + choosenFile, nonBillboardDirectory + '/test-set/' + choosenFile)
-for j in xrange(numOfValidationFiles):
+for j in xrange(numOfValidationOrTestFilesNon):
 	choosenFile = random.choice(os.listdir(nonBillboardDirectory))
 	if choosenFile.endswith(".txt"):
 		os.rename(nonBillboardDirectory + '/' + choosenFile, nonBillboardDirectory + '/validation-set/' + choosenFile)

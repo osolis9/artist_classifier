@@ -16,45 +16,6 @@ profanity = set(['fuck', 'shit', 'damn', 'bitch', 'nigg', 'ass', 'bastard', 'mot
 featurePrefixes = ['feat', 'ft.']
 
 def featureExtractor(x):
-	# d = collections.defaultdict(int)
-	# i = 0
-	# words = x.split()
-	# uniqueWords = set([])
-	# for word in words:
-		# #test
-		# """if (i == 0):
-		# 	#print(i)
-		# 	#sentiment score
-		# 	d[word] = 1
-		# 	d[artist + ' ' + word] = 1
-		# 	i = i+1
-		# 	continue #trying to get sentiment"""
-		# #word = re.sub("[^a-zA-Z]+", '', word).lower() #tried standardizing all words, but it made it worse
-		# uniqueWords.add(word)
-		# d[word] += 1 #unigram
-		# #d[artist + ' ' + word] += 1
-		# if i < len(words) - 1:
-		# 	nextWord = words[i + 1]
-
-
-		# 	#nextWord = re.sub("[^a-zA-Z]+", '', nextWord).lower()
-		# 	d[word + ' ' + nextWord] += 1 #bigram
-		# 	#d[artist + ' ' + word + ' ' + nextWord] += 1
-		# 	if i < len(words) - 2:
-		# 		d[word + ' ' + nextWord + ' ' + words[i+2]] += 1 #trigram
-		# #i = i + 1
-		# #print(i)
-		# #if (float(len(uniqueWords)) / float(len(words)) ) > .4: #unique word ratio
-		# #	d['ratio_score'] = 1
-		# d['ratio_score'] = float(len(uniqueWords)) / float(len(words))
-		# #d[artist + 'ratio_score'] = 1"""
-		# #print(float(len(uniqueWords)) / float(len(words)))
-
-		# #if word in profanity:
-		# #	d[word] = 1
-		# #d[word] = d[word] + 1
-
-		# return d
 
 
 
@@ -68,30 +29,30 @@ def featureExtractor(x):
 	firstLine = lines[0]
 	rest = lines[1]
 
-	firstLineSplit = firstLine.split(':')
-	title = firstLineSplit[0]
-	title = title.replace('-', ' ')
-	artist = firstLineSplit[1]
+	# firstLineSplit = firstLine.split(':')
+	# title = firstLineSplit[0]
+	# title = title.replace('-', ' ')
+	# artist = firstLineSplit[1]
 
-	print (title)
-	print (artist)
+	# print (title)
+	# print (artist)
 
-	#FEATURED ARTISTS
-	#startsWith instead of in
-	#'with' for artists
-	for word in title:
-		for featurePrefix in featurePrefixes:
-			if featurePrefix in word.lower():
-				d['featured_artist'] = 1
-				print ('got here')
-			if 'remix' in word.lower():
-				d['remix'] = 1
-				print ('got here')
-	for word in artist:
-		for featurePrefix in featurePrefixes:
-			if featurePrefix in word.lower():
-				d['featured_artist'] = 1
-				print ('got here')
+	# #FEATURED ARTISTS
+	# #startsWith instead of in
+	# #'with' for artists
+	# for word in title:
+	# 	for featurePrefix in featurePrefixes:
+	# 		if featurePrefix in word.lower():
+	# 			d['featured_artist'] = 1
+	# 			print ('got here')
+	# 		if 'remix' in word.lower():
+	# 			d['remix'] = 1
+	# 			print ('got here')
+	# for word in artist:
+	# 	for featurePrefix in featurePrefixes:
+	# 		if featurePrefix in word.lower():
+	# 			d['featured_artist'] = 1
+	# 			print ('got here')
 
 	# print (title)
 	# print (artist)
@@ -108,59 +69,57 @@ def featureExtractor(x):
 	#words = x.split()
 
 
-
 	uniqueWords = set([])
 	for word in words:
 		uniqueWords.add(word)
+		d[word] += 1 #unigram
+		#d[artist + ' ' + word] += 1
+		if i < len(words) - 1:
+			nextWord = words[i + 1]
 
 
-	################
-		# if i < len(words) - 1:
-		# 	nextWord = words[i + 1]
+			#nextWord = re.sub("[^a-zA-Z]+", '', nextWord).lower()
 
-		# 	#nextWord = re.sub("[^a-zA-Z]+", '', nextWord).lower()
-		# 	d[word + ' ' + nextWord] += 1 #bigram
-		# 	#d[artist + ' ' + word + ' ' + nextWord] += 1
-		# 	if i < len(words) - 2:
-		# 		d[word + ' ' + nextWord + ' ' + words[i+2]] += 1 #trigram
-	##############
+			#uncomment
+			d[word + ' ' + nextWord] += 1 #bigram
 
-		#d[word] += 1 #unigram
+			#d[artist + ' ' + word + ' ' + nextWord] += 1
+			if i < len(words) - 2:
+				d[word + ' ' + nextWord + ' ' + words[i+2]] += 1 #trigram
+		#i = i + 1
+		#print(i)
+	#if (float(len(uniqueWords)) / float(len(words)) ) > .4: #unique word ratio
+	#	d['ratio_score'] = 1
+	d['ratio_score'] = float(len(uniqueWords)) / float(len(words))
+		#d[artist + 'ratio_score'] = 1"""
+		#print(float(len(uniqueWords)) / float(len(words)))
 
-		# if i < len(words) - 1:
-		# 	nextWord = words[i + 1]
-		# 	d[word + ' ' + nextWord] += 1 #bigram
-			#if i < len(words) - 2:
-			#	d[word + ' ' + nextWord + ' ' + words[i+2]] += 1 #trigram
-		for swearPrefix in profanity:
-			if swearPrefix in word:
-				d['profanity'] += 1
 
-		# if word in profanity:
-		# 	d['profanity'] += 1
-		# 	d[word] += 1
-		i = i + 1
+	for swearPrefix in profanity:
+		if swearPrefix in word:
+			d['profanity'] += 1
 
-	# if (float(len(uniqueWords)) / float(len(words)) ) > .3: #unique word ratio
+	#i = i + 1
+
 
 	d['ratio_score'] = float(len(uniqueWords)) / float(len(words))
-	numWords = len(words)
-	if numWords < 200:
-		d['words_200'] = 1
-	elif numWords > 200 and numWords <= 400:
-		d['words_200-400'] = 1
-	elif numWords > 400 and numWords <= 600:
-		d['words_400-600'] = 1
-	elif numWords > 600 and numWords <= 800:
-		d['words_600-800'] = 1
-	elif numWords > 800 and numWords <= 1000:
-		d['words_800-1000'] = 1
-	elif numWords > 1000 and numWords <= 1200:
-		d['words_1000-1200'] = 1
-	elif numWords > 1200 and numWords <= 1400:
-		d['words_1200-1400'] = 1
-	else:
-		d['words_1400'] = 1
+	# numWords = len(words)
+	# if numWords < 200:
+	# 	d['words_200'] = 1
+	# elif numWords > 200 and numWords <= 400:
+	# 	d['words_200-400'] = 1
+	# elif numWords > 400 and numWords <= 600:
+	# 	d['words_400-600'] = 1
+	# elif numWords > 600 and numWords <= 800:
+	# 	d['words_600-800'] = 1
+	# elif numWords > 800 and numWords <= 1000:
+	# 	d['words_800-1000'] = 1
+	# elif numWords > 1000 and numWords <= 1200:
+	# 	d['words_1000-1200'] = 1
+	# elif numWords > 1200 and numWords <= 1400:
+	# 	d['words_1200-1400'] = 1
+	# else:
+	# 	d['words_1400'] = 1
 
 
 
