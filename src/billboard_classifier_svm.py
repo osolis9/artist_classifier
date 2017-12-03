@@ -62,7 +62,7 @@ brands = set(['nike', 'adidas', 'henny', 'hennessy', 'jordans', 'gucci', 'versac
 
 
 def featureExtractor(x):
-	d = collections.defaultdict(int)
+	d = collections.defaultdict(float)
 	i = 0 
 	words = x.split(' ')
 	uniqueWords = set([])
@@ -72,15 +72,18 @@ def featureExtractor(x):
 	artist = lineSplit[1]
 	d[artist] = 1
 	lastWordLine = ''
+	j = 0
 	for word in words:
 		#test
-		#if (i == 0):
+		if (j == 0):
+			d['sentiment_score'] = float(word)
+
 			#print(i)
 			#sentiment score
 		#	d[word] = 1
 		#	d[artist + ' ' + word] = 1
-		#	i = i+1
-		#	continue #trying to get sentiment	
+			j = j+1
+			continue #trying to get sentiment	
 		#word = re.sub("[^a-zA-Z]+", '', word).lower() #tried standardizing all words, but it made it worse
 		uniqueWords.add(word)
 		if word in profanity or word in cities or word in brands:
@@ -97,19 +100,21 @@ def featureExtractor(x):
 		d[word] += 1 #unigram
 		#d[artist + ' ' + word] += 1
 		if i < len(words) - 1:
-			nextWord = words[i + 1]
+			nextWord = words[i + 2]
 
 
 			#nextWord = re.sub("[^a-zA-Z]+", '', nextWord).lower() 
 			d[word + ' ' + nextWord] += 1 #bigram
 			#d[artist + ' ' + word + ' ' + nextWord] += 1
 			if i < len(words) - 2:
-				d[word + ' ' + nextWord + ' ' + words[i+2]] += 1 #trigram
+				d[word + ' ' + nextWord + ' ' + words[i+3]] += 1 #trigram
+		j += 1
 		#i = i + 1
 		#print(i)
-	if (float(len(uniqueWords)) / float(len(words)) ) > .4: #unique word ratio
-		d['ratio_score'] = 1 
-	#d['ratio_score'] = float(len(uniqueWords)) / float(len(words))
+	#if (float(len(uniqueWords)) / float(len(words)) ) > .4: #unique word ratio
+	#	d['ratio_score'] = 1
+
+	d['ratio_score'] = float(len(uniqueWords)) / float(len(words))
 		#d[artist + 'ratio_score'] = 1
 		#print(float(len(uniqueWords)) / float(len(words)))
 
@@ -221,7 +226,7 @@ def labelTrainingExamples():
 				songString = removeUnallowedMetadata(songString)
 				#print("ERROR in billboard " + filename)
 				
-				#songString = addPosOrNeg(songString)
+				songString = addPosOrNeg(songString)
 				#songString = songString.replace('\n', '')
 				#songString = songString.replace('\r', '')
 
@@ -237,7 +242,7 @@ def labelTrainingExamples():
 				songString = ' '.join(song)
 				#print("ERROR not in billboard " + filename)
 				
-				#songString = addPosOrNeg(songString)
+				songString = addPosOrNeg(songString)
 				#songString = songString.replace('\n', '')
 				#songString = songString.replace('\r', '')
 				songEntry = (songString, -1)
@@ -256,7 +261,7 @@ def labelTestExamples():
 				song = f.readlines()
 				songString = ' '.join(song)
 				songString = removeUnallowedMetadata(songString)
-				#songString = addPosOrNeg(songString)
+				songString = addPosOrNeg(songString)
 				#songString = songString.replace('\n', '')
 				#songString = songString.replace('\r', '')
 				songEntry = (songString, 1)
@@ -270,7 +275,7 @@ def labelTestExamples():
 				song = f.readlines()
 				songString = ' '.join(song)
 				
-				#songString = addPosOrNeg(songString)
+				songString = addPosOrNeg(songString)
 				#songString = songString.replace('\n', '')
 				#songString = songString.replace('\r', '')
 				songEntry = (songString, -1)
