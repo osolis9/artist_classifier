@@ -43,8 +43,8 @@ def removeUnallowedMetadata(song):
 	song = firstLine + ' ' + song[song.find('\n'):]
 	return song
 
-def labelTrainingExamples():
-	inBillboardDirectory = '../lyrics/billboard-lyrics/training-set'
+def labelTrainingExamples(dataset):
+	inBillboardDirectory = '../lyrics/'+ dataset + '/billboard-lyrics/training-set'
 	trainingExamples = []
 	for filename in os.listdir(inBillboardDirectory):
 		song = ''
@@ -62,7 +62,7 @@ def labelTrainingExamples():
 				songEntry = (songString, 1)
 				trainingExamples.append(songEntry)
 
-	outOfBillboardDirectory = '../lyrics/non-billboard-lyrics/training-set'
+	outOfBillboardDirectory = '../lyrics/' + dataset + '/non-billboard-lyrics/training-set'
 	for filename in os.listdir(outOfBillboardDirectory):
 		song = ''
 		if filename != '.DS_Store':
@@ -79,8 +79,8 @@ def labelTrainingExamples():
 	return trainingExamples
 
 
-def labelTestExamples():
-	inBillboardDirectory = '../lyrics/billboard-lyrics/validation-set'
+def labelTestExamples(dataset):
+	inBillboardDirectory = '../lyrics/' + dataset + '/billboard-lyrics/validation-set'
 	testExamples = []
 	for filename in os.listdir(inBillboardDirectory):
 		song = ''
@@ -95,7 +95,7 @@ def labelTestExamples():
 				songEntry = (songString, 1)
 				testExamples.append(songEntry)
 
-	outOfBillboardDirectory = '../lyrics/non-billboard-lyrics/validation-set'
+	outOfBillboardDirectory = '../lyrics/' + dataset + '/non-billboard-lyrics/validation-set'
 	for filename in os.listdir(outOfBillboardDirectory):
 		song = ''
 		if filename != '.DS_Store':
@@ -113,7 +113,7 @@ def labelTestExamples():
 
 
 def evaluatePredictor(testExamples, weights, predictor):
-    testExamples = labelTestExamples()
+    #testExamples = labelTestExamples()
     totalTested = len(testExamples)
     correct = 0
     tp = 0

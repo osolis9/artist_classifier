@@ -56,7 +56,7 @@ def featureExtractor(x):
 		artistFeat = re.sub("[^a-zA-Z]+", '', artist)
 		artistFeat = artistFeat.lower()
 
-		#Featured artists
+		#Featured artists (which one is better here?)
 		if artistFeat.startswith('feat') or artistFeat.startswith('ft.'):
 			d['featured_artists'] += 10
 			#d['featured_artists'] = 1
@@ -179,10 +179,19 @@ def main(argv):
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--c", help="type of classifier, regular by default")
 	parser.add_argument("--i", help="number of iterations, 50 by default", type=int)
-	parser.add_argument("--e", help="eta value, .01 by default", type=int)
+	parser.add_argument("--e", help="eta value, .01 by default", type=float)
+	parser.add_argument("--d", help="dataset to use, dataset_1 by default")
 	args = parser.parse_args()
 
-	trainingExamples = labelTrainingExamples()
+	valid_datasets = ['dataset_1', 'dataset_2']
+	dataset = ''
+	if args.d and args.d in valid_datasets:
+		dataset = args.d
+	else:
+		dataset = 'dataset_1'
+
+
+	trainingExamples = labelTrainingExamples(dataset)
 
 	if args.i:
 		numIters = args.i
@@ -202,7 +211,7 @@ def main(argv):
 		weights = learnPredictorRegular(trainingExamples, numIters, eta)
 
 
-	testExamples = labelTestExamples()
+	testExamples = labelTestExamples(dataset)
 	evaluatePredictor(testExamples, weights, predictor)
 
 if __name__ == "__main__":
