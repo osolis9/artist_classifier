@@ -40,7 +40,7 @@ def removeUnallowedMetadata(song):
 	indicesOfColon = [s.start() for s in re.finditer(':', firstLine)]
 	if len(indicesOfColon) > 1:
 		firstLine = firstLine[:indicesOfColon[1]]
-	song = firstLine + ' ' + song[song.find('\n'):]
+	song = firstLine + ' ' + song[song.find('\n') + 1:]
 	return song
 
 def labelTrainingExamples(dataset):
