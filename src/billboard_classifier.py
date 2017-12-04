@@ -8,6 +8,7 @@ from importlib import reload
 import getopt
 import math
 import argparse
+import json
 
 #Can add to profanity list
 profanity = set(['fuck', 'shit', 'damn', 'bitch', 'fucked', 'nigga', 'ass', 'bastard', 'motherfucker', 'shit'])
@@ -15,15 +16,21 @@ profanity = set(['fuck', 'shit', 'damn', 'bitch', 'fucked', 'nigga', 'ass', 'bas
 cities = set(['los', 'angeles', 'la', 'new york', 'atlanta', 'atl', 'houston', 'chicago'])
 brands = set(['nike', 'adidas', 'henny', 'hennessy', 'jordans', 'gucci', 'versace', 'prada', 'ralph', 'chanel', 'mercedes', 'patron', 'bentley'])
 
+json_song_themes = open('../song_info/song_themes.json').read()
+song_themes = json.loads(json_song_themes)
+
 # Returns (title, artist, sentiment, words) tuple
 def parseLyrics(x):
 	lines = x.split('\n', 1)
 	firstLine = lines[0]
+
 	rest = lines[1]
+
+	song_theme_key = firstLine.split(' ', 1)[1]
 
 	#To make weird features work,
 	#need words = x.split() here
-	#words = x.split()
+	# words = x.split()
 	words = rest.split()
 
 	firstLineSplit = firstLine.split(':')
@@ -31,15 +38,44 @@ def parseLyrics(x):
 	firstHalfSplit = firstLineSplit[0].split(' ', 1)
 	sentiment = float(firstHalfSplit[0])
 	title = firstHalfSplit[1].replace('-', ' ')
-	return (title, artist, sentiment, words)
+	return (title, artist, sentiment, song_theme_key.strip(), words)
 
 
 def featureExtractor(x):
 	d = collections.defaultdict(float)
 	i = 0
 
-	title, artist, sentiment, words = parseLyrics(x)
+	title, artist, sentiment, song_theme_key, words = parseLyrics(x)
 	uniqueWords = set([])
+
+	if song_theme_key not in song_themes:
+		song_theme_key = song_theme_key + ' '
+	p = song_themes[song_theme_key]
+	d['Crime'] 											= p['Crime']
+	d['Death'] 											= p['Death']
+	d['Disabled'] 									= p['Disabled']
+	d['Ethnicity'] 									= p['Ethnicity']
+	d['Folklore'] 									= p['Folklore']
+	d['Future'] 										= p['Future']
+	d['Genealogy'] 									= p['Genealogy']
+	d['Government'] 								= p['Government']
+	d['History'] 										= p['History']
+	d['Holidays'] 									= p['Holidays']
+	d['Law'] 												= p['Law']
+	d['Lifestyle_Choices'] 					= p['Lifestyle_Choices']
+	d['Military'] 									= p['Military']
+	d['Organizations'] 							= p['Organizations']
+	d['Paranormal']									= p['Paranormal']
+	d['Philanthropy'] 							= p['Philanthropy']
+	d['Philosophy'] 								= p['Philosophy']
+	d['Politics'] 									= p['Politics']
+	d['Relationships'] 							= p['Relationships']
+	d['Religion_and_Spirituality'] 	= p['Religion_and_Spirituality']
+	d['Sexuality'] 									= p['Sexuality']
+	d['Subcultures'] 								= p['Subcultures']
+	d['Support_Groups'] 						= p['Support_Groups']
+	d['Transgendered']	 						= p['Transgendered']
+	d['Work'] 											= p['Work']
 
 	#Sentiment
 	#Positive/Negative?
@@ -84,7 +120,7 @@ def featureExtractor(x):
 
 		#Weird feature stuff. Can be uncommented for large boost, still need to figure out how this works
 
-		# d[word] += 1 #unigram
+		#d[word] += 1 #unigram
 		# d[artist + ' ' + word] += 1
 		# if i < len(words) - 1:
 		# 	nextWord = words[i + 2]
