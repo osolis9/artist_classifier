@@ -111,6 +111,9 @@ def labelTestExamples(dataset):
 	return testExamples
 
 
+def printWeights(weights):
+	for k, v in weights.items():
+		print (k + ': ' + str(v))
 
 def evaluatePredictor(testExamples, weights, predictor):
     #testExamples = labelTestExamples()

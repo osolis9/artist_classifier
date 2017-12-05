@@ -11,13 +11,59 @@ import argparse
 import json
 
 #Can add to profanity list
-profanity = set(['fuck', 'shit', 'damn', 'bitch', 'fucked', 'nigga', 'ass', 'bastard', 'motherfucker', 'shit'])
+profanity = set(['fuck', 'shit', 'damn', 'bitch', 'fucked', 'nigga', 'ass', 'bastard', 'motherfucker'])
 
 cities = set(['los', 'angeles', 'la', 'new york', 'atlanta', 'atl', 'houston', 'chicago'])
 brands = set(['nike', 'adidas', 'henny', 'hennessy', 'jordans', 'gucci', 'versace', 'prada', 'ralph', 'chanel', 'mercedes', 'patron', 'bentley'])
 
 json_song_themes = open('../song_info/song_themes.json').read()
 song_themes = json.loads(json_song_themes)
+
+
+# IMPORTANT - This must be kept up to date with features for Naive Bayes to work in its current form...
+feature_list = [
+	'Crime',
+	'Death',
+	'Disabled',
+	'Ethnicity',
+	'Folklore',
+	'Future',
+	'Genealogy',
+	'Government',
+	'History',
+	'Holidays',
+	'Law',
+	'Lifestyle_Choices',
+	'Military',
+	'Organizations',
+	'Paranormal',
+	'Philanthropy',
+	'Philosophy',
+	'Politics',
+	'Relationships',
+	'Religion_and_Spirituality',
+	'Sexuality',
+	'Subcultures',
+	'Support_Groups',
+	'Transgendered',
+	'Work',
+	'sentiment_score',
+	'long_title',
+	'featured_artists',
+	'remix',
+	'last_rhyme',
+	'ratio_score',
+	'words_200',
+	'words_200-400',
+	'words_400-600',
+	'words_600-800',
+	'words_800-1000',
+	'words_1000-1200',
+	'words_1200-1400',
+	'words_1400',
+]
+feature_list = feature_list + list(profanity) + list(cities) + list(brands)
+
 
 # Returns (title, artist, sentiment, words) tuple
 def parseLyrics(x):
@@ -50,32 +96,35 @@ def featureExtractor(x):
 
 	if song_theme_key not in song_themes:
 		song_theme_key = song_theme_key + ' '
+	if song_theme_key == '4:44  Let me tell you what I\'m dreaming of ':
+		song_theme_key = '4:44'
+
 	p = song_themes[song_theme_key]
-	d['Crime'] 											= p['Crime']
-	d['Death'] 											= p['Death']
-	d['Disabled'] 									= p['Disabled']
-	d['Ethnicity'] 									= p['Ethnicity']
-	d['Folklore'] 									= p['Folklore']
-	d['Future'] 										= p['Future']
-	d['Genealogy'] 									= p['Genealogy']
-	d['Government'] 								= p['Government']
-	d['History'] 										= p['History']
-	d['Holidays'] 									= p['Holidays']
-	d['Law'] 												= p['Law']
-	d['Lifestyle_Choices'] 					= p['Lifestyle_Choices']
-	d['Military'] 									= p['Military']
-	d['Organizations'] 							= p['Organizations']
-	d['Paranormal']									= p['Paranormal']
-	d['Philanthropy'] 							= p['Philanthropy']
-	d['Philosophy'] 								= p['Philosophy']
-	d['Politics'] 									= p['Politics']
-	d['Relationships'] 							= p['Relationships']
-	d['Religion_and_Spirituality'] 	= p['Religion_and_Spirituality']
-	d['Sexuality'] 									= p['Sexuality']
-	d['Subcultures'] 								= p['Subcultures']
-	d['Support_Groups'] 						= p['Support_Groups']
-	d['Transgendered']	 						= p['Transgendered']
-	d['Work'] 											= p['Work']
+	d['Crime'] 											= p['Crime']*10
+	d['Death'] 											= p['Death']*10
+	d['Disabled'] 									= p['Disabled']*10
+	d['Ethnicity'] 									= p['Ethnicity']*10
+	d['Folklore'] 									= p['Folklore']*10
+	d['Future'] 										= p['Future']*10
+	d['Genealogy'] 									= p['Genealogy']*10
+	d['Government'] 								= p['Government']*10
+	d['History'] 										= p['History']*10
+	d['Holidays'] 									= p['Holidays']*10
+	d['Law'] 												= p['Law']*10
+	d['Lifestyle_Choices'] 					= p['Lifestyle_Choices']*10
+	d['Military'] 									= p['Military']*10
+	d['Organizations'] 							= p['Organizations']*10
+	d['Paranormal']									= p['Paranormal']*10
+	d['Philanthropy'] 							= p['Philanthropy']*10
+	d['Philosophy'] 								= p['Philosophy']*10
+	d['Politics'] 									= p['Politics']*10
+	d['Relationships'] 							= p['Relationships']*10
+	d['Religion_and_Spirituality'] 	= p['Religion_and_Spirituality']*10
+	d['Sexuality'] 									= p['Sexuality']*10
+	d['Subcultures'] 								= p['Subcultures']*10
+	d['Support_Groups'] 						= p['Support_Groups']*10
+	d['Transgendered']	 						= p['Transgendered']*10
+	d['Work'] 											= p['Work']*10
 
 	#Sentiment
 	#Positive/Negative?
@@ -84,6 +133,11 @@ def featureExtractor(x):
 	titleLength = len(title.split())
 	if titleLength > 6:
 		d['long_title'] = 1
+
+	for titleWord in title.split():
+		if titleWord.startswith('feat') or titleWord.startswith('ft.'):
+			d['featured_artists'] = 1
+
 
 	artists = artist.split()
 	for artist in artists:
@@ -94,7 +148,7 @@ def featureExtractor(x):
 
 		#Featured artists (which one is better here?)
 		if artistFeat.startswith('feat') or artistFeat.startswith('ft.'):
-			d['featured_artists'] += 10
+			d['featured_artists'] = 1
 			#d['featured_artists'] = 1
 
 	#Remix, Acoustic, Interlude
@@ -108,13 +162,13 @@ def featureExtractor(x):
 	#look for keywords like hook or chorus
 	for word in words:
 		uniqueWords.add(word)
-		if word in profanity or word in cities or word in brands:
-			d[word] += 10
+		# if word in profanity or word in cities or word in brands:
+			# d[word] += 10
 
 		if word[-1:] == '\n':
 			word = re.sub("[^a-zA-Z]+", '', word) #takes off the \n
 			if lastWordLine[-2:] == word[-2:]:
-				d['lastRhyme'] += 1
+				d['last_rhyme'] += 1
 			lastWordLine = word
 
 
@@ -181,7 +235,7 @@ def learnPredictorRegular(trainExamples, numIters, eta):
 					lossHinge = -(v2*y)
 					weights[k2] = weights[k2] - (eta*lossHinge)
 
-	print (weights)
+	printWeights(weights)
 	return weights
 
 def learnPredictorSVM(trainExamples, numIters, eta):
@@ -200,18 +254,103 @@ def learnPredictorSVM(trainExamples, numIters, eta):
 					lossHinge = -(v2*y)
 					weights[k2] = weights[k2] - (eta*(lossHinge+(lam * weights[k2]))) #im doing this on grad of loss not training loss and notes say training
 
-	print (weights)
+	printWeights(weights)
 	return weights
 
 
-# Arguments
-# n - numIters
-# e - eta
-# d - data
-# c - classifier to use
+def mean(numbers):
+	return sum(numbers)/float(len(numbers))
 
+def stdev(numbers):
+	avg = mean(numbers)
+	variance = sum([pow(x-avg, 2) for x in numbers])/float(len(numbers)-1)
+	return math.sqrt(variance)
+
+def calculateProbability(x, mean, stdev):
+	exponent = math.exp(-(math.pow(x-mean,2)/(2*math.pow(stdev,2))))
+	return (1 / (math.sqrt(2*math.pi) * stdev)) * exponent
+
+# Dictionary with key -- label, value -- array of feature vectors
+def separateTrainingExamplesByClass(trainingExamples):
+	dataByClass = collections.defaultdict()
+
+	for trainingExample in trainingExamples:
+		label = trainingExample[1]
+		feature_vector = featureExtractor(trainingExample[0])
+		if label in dataByClass:
+			array = dataByClass[label]
+			array.append(feature_vector)
+			dataByClass[label] = array
+		else:
+			dataByClass[label] = [feature_vector]
+
+	return dataByClass
+
+
+def summarizeClassData(classData):
+	dp = classData[0]
+
+	grouped_features = collections.defaultdict()
+
+	for datapoint in classData:
+		for feature in feature_list:
+			# if this isnt true, add a 0
+			if feature in datapoint:
+				number = datapoint[feature]
+			else:
+				number = 0
+
+			if feature in grouped_features:
+				array = grouped_features[feature]
+				array.append(number)
+				grouped_features[feature] = array
+			else:
+				grouped_features[feature] = [number]
+
+	# Mean and stdev for each feature
+	summarized_feature_vector = collections.defaultdict()
+	for feature, feature_values in grouped_features.items():
+		feature_mean = mean(feature_values)
+		feature_stdev = stdev(feature_values)
+		summarized_feature_vector[feature] = [feature_mean, feature_stdev]
+
+	return summarized_feature_vector
+
+
+# Takes a test example and returns class with higher probability
+def bayesPredictor(non_billboard_summarized, billboard_summarized, testExample):
+	billboard_probability = 0
+	non_billboard_probability = 0
+	example_features = featureExtractor(testExample)
+
+	for feature in feature_list:
+		if feature in example_features:
+			number = example_features[feature]
+		else:
+			number = 0
+
+		billboard_feature_stats = billboard_summarized[feature]
+		non_billboard_feature_stats = non_billboard_summarized[feature]
+
+		if billboard_feature_stats[1] != 0:
+			prob = calculateProbability(number, billboard_feature_stats[0], billboard_feature_stats[1])
+			if prob > 0:
+				billboard_probability += math.log(prob)
+
+		if non_billboard_feature_stats[1] != 0:
+			prob = calculateProbability(number, non_billboard_feature_stats[0], non_billboard_feature_stats[1])
+			if prob > 0:
+				non_billboard_probability += math.log(prob)
+
+	if billboard_probability > non_billboard_probability:
+		return 1
+
+	return -1
+
+# Run python billboard.classifier.py -h for options
 def main(argv):
 	reload(sys)
+
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--c", help="type of classifier, regular by default")
 	parser.add_argument("--i", help="number of iterations, 50 by default", type=int)
@@ -243,6 +382,40 @@ def main(argv):
 		weights = learnPredictorSVM(trainingExamples, numIters, eta)
 	elif args.c == 'regular':
 		weights = learnPredictorRegular(trainingExamples, numIters, eta)
+	elif args.c == 'bayes':
+
+		#TODO: Add class probabilities (**)
+		separated_data = separateTrainingExamplesByClass(trainingExamples)
+		non_billboard_summarized = summarizeClassData(separated_data[-1])
+		billboard_summarized = summarizeClassData(separated_data[1])
+		testExamples = labelTestExamples(dataset)
+		totalTested = len(testExamples)
+		correct = 0
+		tp = 0
+		fp = 0
+		fn = 0
+		tn = 0
+
+		for testExample in testExamples:
+			prediction = bayesPredictor(non_billboard_summarized, billboard_summarized, testExample[0])
+			actual = testExample[1]
+
+			if actual == 1 and prediction == 1:
+				tp += 1
+			if prediction == 1 and actual == -1:
+				fp += 1
+			if prediction == -1 and actual == 1:
+				fn += 1
+			if (actual == prediction):
+				correct += 1
+
+		print (correct)
+		print (totalTested)
+		percentageCorrect = float(correct) / float(totalTested)
+		print ("Accuracy: " + str(percentageCorrect))
+		print ("Precision: " + str(float(tp)/ (float(tp) + float(fp))))
+		print ("Recall: " + str(float(tp)/ (float(tp) + float(fn))))
+		sys.exit(2)
 	else:
 		weights = learnPredictorRegular(trainingExamples, numIters, eta)
 
