@@ -9,6 +9,7 @@ import getopt
 import math
 import argparse
 import json
+import decimal
 
 #Can add to profanity list
 profanity = set(['fuck', 'shit', 'damn', 'bitch', 'fucked', 'nigga', 'ass', 'bastard', 'motherfucker', 'shit'])
@@ -50,6 +51,8 @@ def featureExtractor(x):
 
 	if song_theme_key not in song_themes:
 		song_theme_key = song_theme_key + ' '
+	if song_theme_key == '4:44  Let me tell you what I\'m dreaming of ':
+		song_theme_key = '4:44'
 	p = song_themes[song_theme_key]
 	d['Crime'] 											= p['Crime']
 	d['Death'] 											= p['Death']
@@ -157,15 +160,21 @@ def featureExtractor(x):
 	return d
 
 
-def predictor(x, weights):
+def predictor(x, weights, classifier):
 	score = 0
 	features = featureExtractor(x)
 	score = dotProduct(features, weights)
-	#print score
-	if score <= 0:
-		return -1
+	print(score)
+	if classifier == 'logistic':
+		if score <= 0.5:
+			return -1
+		else:
+			return 1
 	else:
-		return 1
+		if score <= 0:
+			return -1
+		else:
+			return 1
 
 def learnPredictorRegular(trainExamples, numIters, eta):
 	weights = collections.defaultdict(int)
@@ -199,6 +208,28 @@ def learnPredictorSVM(trainExamples, numIters, eta):
 				for k2, v2 in features.items():
 					lossHinge = -(v2*y)
 					weights[k2] = weights[k2] - (eta*(lossHinge+(lam * weights[k2]))) #im doing this on grad of loss not training loss and notes say training
+
+	print (weights)
+	return weights
+
+def learnPredictorLogistic(trainExamples, numIters, eta):
+	weights = collections.defaultdict(int)
+	for i in range(numIters):
+		print ('Starting iteration ' + str(i) + '...')
+		for i in range(len(trainExamples)):
+			decimal.getcontext().prec = 100
+			x = trainExamples[i][0]
+			y = decimal.Decimal(trainExamples[i][1])
+			features = featureExtractor(x)
+			e = decimal.Decimal(math.e)
+			for k2, v2 in features.items():
+				decimalWeight = decimal.Decimal(weights[k2])
+				V2 = decimal.Decimal(v2)
+				firstTerm = decimal.Decimal(1/(1+(e**(-1*decimalWeight*V2*y))))
+				secondTerm = decimal.Decimal((-1*(e**(-1*decimalWeight*V2*y))))
+				thirdTerm = decimal.Decimal(V2*y)
+				lossLogistic = float(firstTerm*secondTerm*thirdTerm)
+				weights[k2] = weights[k2] - (eta*lossLogistic)
 
 	print (weights)
 	return weights
@@ -243,12 +274,14 @@ def main(argv):
 		weights = learnPredictorSVM(trainingExamples, numIters, eta)
 	elif args.c == 'regular':
 		weights = learnPredictorRegular(trainingExamples, numIters, eta)
+	elif args.c == 'logistic':
+		weights = learnPredictorLogistic(trainingExamples, numIters, eta)
 	else:
 		weights = learnPredictorRegular(trainingExamples, numIters, eta)
 
 
 	testExamples = labelTestExamples(dataset)
-	evaluatePredictor(testExamples, weights, predictor)
+	evaluatePredictor(testExamples, weights, predictor, args.c)
 
 if __name__ == "__main__":
 	main(sys.argv[1:])

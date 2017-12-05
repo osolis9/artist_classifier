@@ -112,8 +112,8 @@ def labelTestExamples(dataset):
 
 
 
-def evaluatePredictor(testExamples, weights, predictor):
-    #testExamples = labelTestExamples()
+def evaluatePredictor(testExamples, weights, predictor, classifier):
+	#testExamples = labelTestExamples()
     totalTested = len(testExamples)
     correct = 0
     tp = 0
@@ -124,7 +124,7 @@ def evaluatePredictor(testExamples, weights, predictor):
     count = 0
     for testExample in testExamples:
 
-        prediction = predictor(testExample[0], weights)
+        prediction = predictor(testExample[0], weights, classifier)
         actual = testExample[1]
         if actual == 1 and prediction == 1:
             tp += 1
