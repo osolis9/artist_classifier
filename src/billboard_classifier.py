@@ -62,8 +62,10 @@ feature_list = [
 	'words_1000-1200',
 	'words_1200-1400',
 	'words_1400',
+	'profanity',
+	'cities-and-brands'
 ]
-feature_list = feature_list + list(profanity) + list(cities) + list(brands)
+#feature_list = feature_list + list(profanity) + list(cities) + list(brands)
 
 
 # Returns (title, artist, sentiment, words) tuple
@@ -163,8 +165,10 @@ def featureExtractor(x):
 	#look for keywords like hook or chorus
 	for word in words:
 		uniqueWords.add(word)
-		# if word in profanity or word in cities or word in brands:
-			# d[word] += 10
+		if word in profanity:
+			d['profanity'] += 1
+		if word in cities or word in brands:
+			d['cities-and-brands'] += 1
 
 		if word[-1:] == '\n':
 			word = re.sub("[^a-zA-Z]+", '', word) #takes off the \n
@@ -417,6 +421,12 @@ def main(argv):
 		separated_data = separateTrainingExamplesByClass(trainingExamples)
 		non_billboard_summarized = summarizeClassData(separated_data[-1])
 		billboard_summarized = summarizeClassData(separated_data[1])
+		print("Non-billboard mean and std: ")
+		for k, v in non_billboard_summarized.items():
+			print(str(k) + ", " + str(v))
+		print("Billboard mean and std: ")
+		for k, v in billboard_summarized.items():
+			print(str(k) + ", " + str(v))
 		testExamples = labelTestExamples(dataset)
 		totalTested = len(testExamples)
 		correct = 0
@@ -450,7 +460,8 @@ def main(argv):
 	else:
 		weights = learnPredictorRegular(trainingExamples, numIters, eta)
 
-
+	sortedWeights = sorted(weights.items(), key=lambda x: x[1])
+	print(sortedWeights)
 	testExamples = labelTestExamples(dataset)
 	evaluatePredictor(testExamples, weights, predictor, args.c)
 
