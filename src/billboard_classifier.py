@@ -62,10 +62,8 @@ feature_list = [
 	'words_1000-1200',
 	'words_1200-1400',
 	'words_1400',
-	'profanity',
-	'cities-and-brands'
 ]
-#feature_list = feature_list + list(profanity) + list(cities) + list(brands)
+feature_list = feature_list + list(profanity) + list(cities) + list(brands)
 
 
 # Returns (title, artist, sentiment, words) tuple
@@ -103,31 +101,31 @@ def featureExtractor(x):
 		song_theme_key = '4:44'
 
 	p = song_themes[song_theme_key]
-	d['Crime'] 											= p['Crime']*10
-	d['Death'] 											= p['Death']*10
-	d['Disabled'] 									= p['Disabled']*10
-	d['Ethnicity'] 									= p['Ethnicity']*10
-	d['Folklore'] 									= p['Folklore']*10
-	d['Future'] 										= p['Future']*10
-	d['Genealogy'] 									= p['Genealogy']*10
-	d['Government'] 								= p['Government']*10
-	d['History'] 										= p['History']*10
-	d['Holidays'] 									= p['Holidays']*10
-	d['Law'] 												= p['Law']*10
-	d['Lifestyle_Choices'] 					= p['Lifestyle_Choices']*10
-	d['Military'] 									= p['Military']*10
-	d['Organizations'] 							= p['Organizations']*10
-	d['Paranormal']									= p['Paranormal']*10
-	d['Philanthropy'] 							= p['Philanthropy']*10
-	d['Philosophy'] 								= p['Philosophy']*10
-	d['Politics'] 									= p['Politics']*10
-	d['Relationships'] 							= p['Relationships']*10
-	d['Religion_and_Spirituality'] 	= p['Religion_and_Spirituality']*10
-	d['Sexuality'] 									= p['Sexuality']*10
-	d['Subcultures'] 								= p['Subcultures']*10
-	d['Support_Groups'] 						= p['Support_Groups']*10
-	d['Transgendered']	 						= p['Transgendered']*10
-	d['Work'] 											= p['Work']*10
+	d['Crime'] 											= p['Crime']*1
+	d['Death'] 											= p['Death']*1
+	d['Disabled'] 									= p['Disabled']*1
+	d['Ethnicity'] 									= p['Ethnicity']*1
+	d['Folklore'] 									= p['Folklore']*1
+	d['Future'] 										= p['Future']*1
+	d['Genealogy'] 									= p['Genealogy']*1
+	d['Government'] 								= p['Government']*1
+	d['History'] 										= p['History']*1
+	d['Holidays'] 									= p['Holidays']*1
+	d['Law'] 												= p['Law']*1
+	d['Lifestyle_Choices'] 					= p['Lifestyle_Choices']*1
+	d['Military'] 									= p['Military']*1
+	d['Organizations'] 							= p['Organizations']*1
+	d['Paranormal']									= p['Paranormal']*1
+	d['Philanthropy'] 							= p['Philanthropy']*1
+	d['Philosophy'] 								= p['Philosophy']*1
+	d['Politics'] 									= p['Politics']*1
+	d['Relationships'] 							= p['Relationships']*1
+	d['Religion_and_Spirituality'] 	= p['Religion_and_Spirituality']*1
+	d['Sexuality'] 									= p['Sexuality']*1
+	d['Subcultures'] 								= p['Subcultures']*1
+	d['Support_Groups'] 						= p['Support_Groups']*1
+	d['Transgendered']	 						= p['Transgendered']*1
+	d['Work'] 											= p['Work']*1
 
 	#Sentiment
 	#Positive/Negative?
@@ -145,7 +143,9 @@ def featureExtractor(x):
 	artists = artist.split()
 	for artist in artists:
 		#This seems like it would be cheating
-		#d[artist] = 1
+		#artist = re.sub("[^a-zA-Z]+", '', artist).lower()
+		#if not artist.startswith('feat') and not artist.startswith('ft.'):
+		#	d[artist] = 1
 		artistFeat = re.sub("[^a-zA-Z]+", '', artist)
 		artistFeat = artistFeat.lower()
 
@@ -163,12 +163,11 @@ def featureExtractor(x):
 	lastWordLine = ''
 	j = 0
 	#look for keywords like hook or chorus
+	#good one
 	for word in words:
 		uniqueWords.add(word)
-		if word in profanity:
-			d['profanity'] += 1
-		if word in cities or word in brands:
-			d['cities-and-brands'] += 1
+		# if word in profanity or word in cities or word in brands:
+			# d[word] += 10
 
 		if word[-1:] == '\n':
 			word = re.sub("[^a-zA-Z]+", '', word) #takes off the \n
@@ -251,10 +250,10 @@ def learnPredictorRegular(trainExamples, numIters, eta):
 
 def learnPredictorSVM(trainExamples, numIters, eta):
 	weights = collections.defaultdict(int)
-	lam = .5
+	lam = .01 #best results .1 gives an ok result
 	for j in range(numIters):
 		print ('Starting iteration ' + str(j) + '...')
-		eta = float(1) / math.sqrt(j + 1)
+		#eta = float(1) / math.sqrt(j + 1)
 		for i in range(len(trainExamples)):
 			x = trainExamples[i][0]
 			y = trainExamples[i][1]
@@ -421,12 +420,6 @@ def main(argv):
 		separated_data = separateTrainingExamplesByClass(trainingExamples)
 		non_billboard_summarized = summarizeClassData(separated_data[-1])
 		billboard_summarized = summarizeClassData(separated_data[1])
-		print("Non-billboard mean and std: ")
-		for k, v in non_billboard_summarized.items():
-			print(str(k) + ", " + str(v))
-		print("Billboard mean and std: ")
-		for k, v in billboard_summarized.items():
-			print(str(k) + ", " + str(v))
 		testExamples = labelTestExamples(dataset)
 		totalTested = len(testExamples)
 		correct = 0
