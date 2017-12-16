@@ -1,6 +1,6 @@
 # artist_classifier
 
-To Run: `python3 billboard_classifier.py`.
+To Run do following command in src directory: `python3 billboard_classifier.py`.
 
 Optional flags:
 1. `--c`: Types of classifiers ['regular', 'svm', 'bayes', 'logistic'] (defaults to regular) (regular refers to hinge loss)
