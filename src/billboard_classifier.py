@@ -12,10 +12,11 @@ import json
 import decimal
 
 #Can add to profanity list
-profanity = set(['fuck', 'shit', 'damn', 'bitch', 'fucked', 'nigga', 'ass', 'bastard', 'motherfucker'])
+
 
 cities = set(['los', 'angeles', 'la', 'new york', 'atlanta', 'atl', 'houston', 'chicago'])
 brands = set(['nike', 'adidas', 'henny', 'hennessy', 'jordans', 'gucci', 'versace', 'prada', 'ralph', 'chanel', 'mercedes', 'patron', 'bentley'])
+profanity = set(['fuck', 'shit', 'damn', 'bitch', 'fucked', 'nigga', 'ass', 'bastard', 'motherfucker'])
 
 json_song_themes = open('../song_info/song_themes.json').read()
 song_themes = json.loads(json_song_themes)
@@ -75,9 +76,6 @@ def parseLyrics(x):
 
 	song_theme_key = firstLine.split(' ', 1)[1]
 
-	#To make weird features work,
-	#need words = x.split() here
-	# words = x.split()
 	words = rest.split()
 
 	firstLineSplit = firstLine.split(':')
@@ -174,20 +172,6 @@ def featureExtractor(x):
 			if lastWordLine[-2:] == word[-2:]:
 				d['last_rhyme'] += 1
 			lastWordLine = word
-
-
-		#Weird feature stuff. Can be uncommented for large boost, still need to figure out how this works
-
-		#d[word] += 1 #unigram
-		# d[artist + ' ' + word] += 1
-		# if i < len(words) - 1:
-		# 	nextWord = words[i + 2]
-		# 	nextWord = re.sub("[^a-zA-Z]+", '', nextWord).lower()
-		# 	d[word + ' ' + nextWord] += 1 #bigram
-		# 	d[artist + ' ' + word + ' ' + nextWord] += 1
-		# 	if i < len(words) - 2:
-		# 		d[word + ' ' + nextWord + ' ' + words[i+3]] += 1 #trigram
-		# j += 1
 
 
 	# Ratio for repetition
